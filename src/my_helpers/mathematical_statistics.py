@@ -76,7 +76,7 @@ class MathematicalStatistics(MathematicalStatisticsData):
         m__4_f = (m__4_f_a + m__4_f_b) / 2
         return MathematicalStatisticsData(m_f * 1000, m_2_f * 1000, m_3_f * 1000, m_4_f * 1000, m__2_f * 1000, m__4_f * 1000)
 
-    def getFourierSeries(self, y, terms = 30, L = 1):
+    def getFourierSeries(self, y, terms = 50, L = 1):
         x = np.linspace(0, L, self.sampling_rate, endpoint=False)
         a0 = 2./L*simps(y,x)
         an = lambda n:2.0/L*simps(y*np.cos(2.*np.pi*n*x/L),x)

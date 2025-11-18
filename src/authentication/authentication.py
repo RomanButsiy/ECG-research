@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 import neurokit2 as nk
 import authentication.authentication_data as used_authentication
 from scipy.stats import probplot
+import statsmodels.api as sm
 
 class Authentication():
 
@@ -38,11 +39,11 @@ class Authentication():
         self.names = [
             "Nearest Neighbors",
             "Linear SVM",
+            "Gaussian Process",
             "Decision Tree",
             "Random Forest",
             "Neural Net (MLP)",
             "AdaBoost",
-            "Naive Bayes"
         ]
 
         self.classifiers = [
@@ -53,7 +54,6 @@ class Authentication():
             RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
             MLPClassifier(alpha=1, max_iter=1000),
             AdaBoostClassifier(),
-            GaussianNB(),
         ]
 
 
@@ -65,18 +65,52 @@ class Authentication():
 
     def Diff(self):
         logger.debug("Diff")
-        # tmp_path = "Confusion matrix pleth_1"
-        # tmp_path = "Confusion matrix"
+        # tmp_path = "Confusion matrix ecg_0"
+        tmp_path = "Confusion matrix pleth_0"
         # tmp_path = "Confusion matrix line"
         # tmp_path = "Confusion matrix line SCG"
-        tmp_path = "Confusion matrix SCG"
-        for average_elements in np.arange(1, 20 + 1):
-            all_data = [pd.read_csv(f'{self.ecg_config.getImgPath()}/{operator}/{tmp_path}/Authentication n-{average_elements}.csv').drop('Unnamed: 0', axis=1, errors='ignore') for operator in used_authentication.diff]
-            # df = pd.DataFrame(np.round(np.mean(all_data, axis=0), 3), index=self.confusion_matrix_names, columns=[*self.names, "SIC"])
-            std = pd.DataFrame(np.round(np.std(all_data, axis=0, ddof=1), 3), index=self.confusion_matrix_names, columns=[*self.names, "SIC"])
+        # tmp_path = "Confusion matrix SCG"
+        for average_elements in np.arange(1, 10 + 1):
+        # for average_elements in np.arange(0.5, 10.1, 0.1):
+            average_elements = np.round(average_elements, 1)
+            all_data = [pd.read_csv(f'{self.ecg_config.getImgPath()}/{operator}/{tmp_path}/Authentication n-{average_elements}.csv').drop('Unnamed: 0', axis=1, errors='ignore') for operator in used_authentication.diff2]
+            all_mean = np.mean(all_data, axis=0)
+            all_std = np.std(all_data, axis=0, ddof=1)
+            df = pd.DataFrame(np.round(all_mean, 3), index=self.confusion_matrix_names, columns=[*self.names])
+            all_std_3_N = (3 * all_std) / np.power(len(all_data), 0.5)
+            Low = all_mean - all_std_3_N
+            Up = all_mean + all_std_3_N
+            Low_pd = pd.DataFrame(np.round(Low, 3), index=self.confusion_matrix_names, columns=[*self.names])
+            Up_pd = pd.DataFrame(np.round(Up, 3), index=self.confusion_matrix_names, columns=[*self.names])
+            
+            # Clamping the values to 1 for specified rows
+            clamp_rows = ["Accuracy", "Balanced Accuracy", "F1 score"]
+            Up_pd.loc[clamp_rows] = Up_pd.loc[clamp_rows].clip(upper=1)
+
             Path(f'{self.a_path}/{tmp_path}').mkdir(parents=True, exist_ok=True)
-            # df.to_csv(f'{self.a_path}/{tmp_path}/Authentication n-{average_elements}.csv')
-            std.to_csv(f'{self.a_path}/{tmp_path}/STD-Authentication n-{average_elements}.csv')
+            df.to_csv(f'{self.a_path}/{tmp_path}/Authentication n-{average_elements}.csv')
+            Low_pd.to_csv(f'{self.a_path}/{tmp_path}/Low-Authentication n-{average_elements}.csv')
+            Up_pd.to_csv(f'{self.a_path}/{tmp_path}/Up-Authentication n-{average_elements}.csv')
+
+        # all_mean = pd.read_csv(f'{self.ecg_config.getImgPath()}/DIFF/BAK/{tmp_path}/Authentication n-1.csv', index_col="Unnamed: 0")
+        # all_std = pd.read_csv(f'{self.ecg_config.getImgPath()}/DIFF/BAK/{tmp_path}/STD-Authentication n-1.csv', index_col="Unnamed: 0")
+
+        # print(all_mean)
+        # print(all_std)
+        # all_std_3_N = (3 * all_std) / np.power(18, 0.5)
+
+        # Low = all_mean - all_std_3_N
+        # Up = all_mean + all_std_3_N
+        # Low_pd = Low.round(3)
+        # Up_pd = Up.round(3)
+        # print(Low_pd)
+        # # Clamping the values to 1 for specified rows
+        # clamp_rows = ["Accuracy", "Balanced Accuracy", "F1 score"]
+        # Up_pd.loc[clamp_rows] = Up_pd.loc[clamp_rows].clip(upper=1)
+        # Path(f'{self.a_path}/{tmp_path}').mkdir(parents=True, exist_ok=True)
+        # Low_pd.to_csv(f'{self.a_path}/BAK/{tmp_path}/Low-Authentication n-1.csv')
+        # Up_pd.to_csv(f'{self.a_path}/BAK/{tmp_path}/Up-Authentication n-1.csv')
+
 
         # all_data = [pd.read_csv(f'{self.ecg_config.getImgPath()}/{operator}/{tmp_path}/Sigma mean.csv').drop('Unnamed: 0', axis=1, errors='ignore') for operator in used_authentication.diff]  
         # df = pd.DataFrame(np.round(np.mean(all_data, axis=0), 4), columns=["N", "Data"])
@@ -84,9 +118,9 @@ class Authentication():
 
     def QQplot(self):
         logger.debug("QQplot")
-        tmp_path = "Confusion matrix pleth_1"
+        # tmp_path = "Confusion matrix pleth_1"
         # tmp_path = "Confusion matrix"
-        # tmp_path = "Confusion matrix SCG"
+        tmp_path = "Confusion matrix SCG"
         confusion_matrix_names = [
             "Accuracy"
         ]
@@ -101,28 +135,38 @@ class Authentication():
         # print(all_data[0])
         for cm_name in confusion_matrix_names:
             read_data = []
-            for operator in used_authentication.diff2:
-                df = pd.read_csv(f'{self.ecg_config.getImgPath()}/{operator}/{tmp_path}/Authentication n-1.csv')
+            for operator in used_authentication.diff:
+                df = pd.read_csv(f'{self.ecg_config.getImgPath()}/{operator}/{tmp_path}/Authentication n-7.csv')
                 accuracy_row = df.loc[df['Unnamed: 0'] == cm_name]
-                accuracy_array = accuracy_row.values.flatten()[1:]
+                accuracy_array = accuracy_row.values.flatten()[-1:]
+                # accuracy_array = accuracy_row.values.flatten()[-3:-2]
+                # print(accuracy_row.values.flatten()[-2:-1])
+                # print(accuracy_array)
                 read_data.append(accuracy_array)
 
-        flattened_list = [item for sublist in read_data for item in sublist]
-        # print(flattened_list)
+        flattened_list = np.array([item for sublist in read_data for item in sublist])
         plt.clf()
         plt.rcParams.update({'font.size': 14})
         f, axis = plt.subplots(1)
-        f.set_size_inches(19, 6)
         f.tight_layout()
+        f.set_size_inches(19, 6)
+        # f.tight_layout()
         axis.grid(True)
-        probplot(flattened_list, dist="norm", plot=axis)
-        axis.title.set_text('QQ-Plot for Accuracy')
-        axis.set_xlabel('Theoretical Quantiles')
-        axis.set_ylabel('Accuracy Quantiles')
+        m = np.mean(flattened_list)
+        q = np.std(flattened_list, ddof = 0)
+        print(q)
+        print(m)
+        probplot(flattened_list, dist="norm", sparams=(0, 0.5), plot=axis)
+        print(flattened_list)
+        # sm.qqplot(flattened_list, ax=axis)
+        axis.title.set_text('')
+        axis.set_xlabel('Accuracy Quantiles Theoretical')
+        axis.set_ylabel('Accuracy Quantiles Practical')
         axis.axis(ymin = 0, ymax = 1.2)
-        plt.savefig(f'{self.a_path}/{tmp_path}/QQ-Accuracy-Authentication n-1.png', dpi=300)
+        plt.savefig(f'{self.a_path}/{tmp_path}/SCG QQ-Accuracy-Authentication SIC2.png', dpi=300)
+        # plt.savefig(f'{self.a_path}/{tmp_path}/ECG QQ-Accuracy-Authentication AdaBoost.png', dpi=300)
 
-    def Classifiers(self):
+    def Classifiers(self, m_count):
         logger.debug("Classifiers")
         selected_array = used_authentication.arrays.get(self.ecg_config.getConfigBlock(), [])
         # other_array = used_authentication.arrays.get("OTHER1", [])
@@ -133,14 +177,15 @@ class Authentication():
 
         # DataPreparation(ECGConfig(selected_array[0])).getPreparedData()
 
-        all_data_in.extend([item for conf in selected_array for item in DataPreparation(ECGConfig(conf)).getPreparedData()])
+        all_data_in.extend([item for conf in selected_array for item in DataPreparation(ECGConfig(conf), m_count).getPreparedData()])
         for conf in other_array:
-               other_data_in.append(DataPreparation(ECGConfig(conf)).getPreparedData()[:int(len(all_data_in) / 10)])
-
+               other_data_in.append(DataPreparation(ECGConfig(conf), m_count).getPreparedData()[:int(len(all_data_in) / 10)])
 
         sigma_mean = []
 
-        for average_elements in np.arange(1, 1 + 1):
+        for average_elements in np.arange(1, 10 + 1):
+
+            m_count = average_elements
 
             self.ltime = 0
 
@@ -168,7 +213,7 @@ class Authentication():
             a_sigmas = self.read_channel_data(self.a_path, "All Sigma")
             a_means = self.read_channel_data(self.a_path, "All Mathematical Expectation")
 
-            sigma_mean.append(np.mean(a_sigmas))
+            # sigma_mean.append(np.mean(a_sigmas))
 
             n_sigma = 2.6  #2.6
 
@@ -177,24 +222,24 @@ class Authentication():
             a_lower_bounds = np.power(a_means - (n_sigma * a_sigmas), 1)
 
 
-            mean = all_data[10]
-            # mean = other_data[10]
+            # mean = all_data[10]
+            # # mean = other_data[10]
 
-            plt.clf()
-            plt.rcParams.update({'font.size': 15})
-            f, axis = plt.subplots(1)
-            f.set_size_inches(12, 6)
-            f.tight_layout()
-            axis.grid(True)
-            m_time = np.arange(0, len(mean), 1) / 360
-            axis.plot(m_time, mean, linewidth=3, label=r"$\xi_{{\omega}} (t), mV$")
-            axis.plot(m_time, a_upper_bounds, linewidth=3, label=r"$Upper_{{\xi}} (t), mV$")
-            axis.plot(m_time, a_lower_bounds, linewidth=3, label=r"$Lower_{{\xi}} (t), mV$")
-            axis.set_xlabel("$t, s$", loc = 'right')
-            axis.axis(xmin = 0, xmax = 1)
-            axis.legend(loc='upper right')
-            plt.savefig(f'{self.a_path}/Other-Authentication.png', dpi=300)
-            # plt.savefig(f'{self.a_path}/Authentication.png', dpi=300)
+            # plt.clf()
+            # plt.rcParams.update({'font.size': 15})
+            # f, axis = plt.subplots(1)
+            # f.set_size_inches(12, 6)
+            # f.tight_layout()
+            # axis.grid(True)
+            # m_time = np.arange(0, len(mean), 1) / 360
+            # axis.plot(m_time, mean, linewidth=3, label=r"$\xi_{{\omega}} (t), mV$")
+            # axis.plot(m_time, a_upper_bounds, linewidth=3, label=r"$Upper_{{\xi}} (t), mV$")
+            # axis.plot(m_time, a_lower_bounds, linewidth=3, label=r"$Lower_{{\xi}} (t), mV$")
+            # axis.set_xlabel("$t, s$", loc = 'right')
+            # axis.axis(xmin = 0, xmax = 1)
+            # axis.legend(loc='upper right')
+            # plt.savefig(f'{self.a_path}/Other-Authentication.png', dpi=300)
+            # # plt.savefig(f'{self.a_path}/Authentication.png', dpi=300)
 
 
             lend = time.time()
@@ -229,17 +274,18 @@ class Authentication():
 
             _cm.append(sic_res)
 
-            path = f'{self.a_path}/Confusion matrix pleth_1 line'
-            # path = f'{self.a_path}/Confusion matrix line 0'
+            path = f'{self.a_path}/Confusion matrix ecg_0'
+            # path = f'{self.a_path}/RAW Confusion matrix pleth_1'
             # path = f'{self.a_path}/Confusion matrix line SCG'
-            # path = f'{self.a_path}/Confusion matrix SCG'
+            # path = f'{self.a_path}/RAW Confusion matrix'
             Path(path).mkdir(parents=True, exist_ok=True)
 
             df = pd.DataFrame(np.transpose(np.round(_cm, 4)), index=self.confusion_matrix_names, columns=[*self.names, "SIC"])
-            df.to_csv(f'{path}/Authentication n-{average_elements}.csv')
+            # df = pd.DataFrame(np.transpose(np.round(_cm, 4)), index=self.confusion_matrix_names, columns=self.names)
+            df.to_csv(f'{path}/Authentication n-{m_count}.csv')
 
-        data = pd.DataFrame({"N" : np.arange(1, average_elements + 1), "Data" : sigma_mean})
-        nk.write_csv(data, f'{path}/Sigma mean.csv')
+        # data = pd.DataFrame({"N" : np.arange(1, average_elements + 1), "Data" : sigma_mean})
+        # nk.write_csv(data, f'{path}/Sigma mean.csv')
 
     def Plot_n(self):
         logger.debug("Plot_n")
@@ -249,67 +295,67 @@ class Authentication():
             "F1 score", "Learning_time", "Testing_time"
         ]
         names = [*self.names, "SIC"]
-        # path = f'{self.a_path}/Confusion matrix pleth_1 line'
+        # path = f'{self.a_path}/Confusion matrix pleth_1'
         # path = f'{self.a_path}/Confusion matrix line'
-        # path = f'{self.a_path}/Confusion matrix'
+        path = f'{self.a_path}/Confusion matrix pleth_0'
         # path = f'{self.a_path}/Confusion matrix line SCG'
-        path = f'{self.a_path}/Confusion matrix SCG'
-        # arr = np.arange(1, 20 + 1)
-        # for cm_name in confusion_matrix_names:
-        #     read_data = []
-        #     for i in arr:
-        #         df = pd.read_csv(f'{path}/Authentication n-{i}.csv')
-        #         accuracy_row = df.loc[df['Unnamed: 0'] == cm_name]
-        #         accuracy_array = accuracy_row.values.flatten()[1:]
-        #         read_data.append(accuracy_array)
-        #     t2 = np.transpose(np.array(read_data))
-        #     plt.clf()
-        #     plt.rcParams.update({'font.size': 14})
-        #     f, axis = plt.subplots(1)
-        #     f.set_size_inches(19, 6)
-        #     f.tight_layout()
-        #     axis.grid(True)
-        #     axis.set_xlabel("N", loc = 'right')
-        #     if "time" in cm_name:
-        #         t2 = t2 / 1000.0
-        #         axis.set_title("t, s", loc = 'left', fontsize=14, position=(-0.02, 0))
-        #     for i, name in zip(t2[::-1], names[::-1]):
-        #         axis.plot(arr, i, linewidth=2, label=name, marker='o')
-        #     axis.legend(loc='best',prop={'size':10})
+        # path = f'{self.a_path}/Confusion matrix SCG'
+        arr = np.arange(1, 10 + 1)
+        for cm_name in confusion_matrix_names:
+            read_data = []
+            for i in arr:
+                df = pd.read_csv(f'{path}/Authentication n-{i}.csv')
+                accuracy_row = df.loc[df['Unnamed: 0'] == cm_name]
+                accuracy_array = accuracy_row.values.flatten()[1:]
+                read_data.append(accuracy_array)
+            t2 = np.transpose(np.array(read_data))
+            plt.clf()
+            plt.rcParams.update({'font.size': 21})
+            f, axis = plt.subplots(1)
+            f.set_size_inches(16, 6)
+            f.tight_layout()
+            axis.grid(True)
+            axis.set_xlabel("N", loc = 'right')
+            if "time" in cm_name:
+                t2 = t2 / 1000.0
+                axis.set_title("t, s", loc = 'left', fontsize=21, position=(-0.02, 0))
+            for i, name in zip(t2[::-1], names[::-1]):
+                axis.plot(arr, i, linewidth=3, label=name, marker='o')
+            axis.legend(loc='lower right',prop={'size':20})
 
-        #     max_value = np.nanmax(t2) if not np.isnan(np.nanmax(t2)) else 0
-        #     min_value = np.nanmin(t2) if not np.isnan(np.nanmax(t2)) else 0
-        #     ymin = 0
-        #     ymax = 1.1
-        #     if "time" in cm_name:
-        #         ymax = 0.1
+            max_value = np.nanmax(t2) if not np.isnan(np.nanmax(t2)) else 0
+            min_value = np.nanmin(t2) if not np.isnan(np.nanmax(t2)) else 0
+            ymin = 0
+            ymax = 1.1
+            if "time" in cm_name:
+                ymax = 0.1
 
-        #     if ymin > min_value:
-        #         ymin = min_value
+            if ymin > min_value:
+                ymin = min_value
 
-        #     if ymax < max_value and not np.isinf(max_value):
-        #         ymax = max_value + (max_value / 11.0)
+            if ymax < max_value and not np.isinf(max_value):
+                ymax = max_value + (max_value / 11.0)
 
-        #     axis.axis(ymin = ymin, ymax = ymax)
-        #     axis.axis(xmin = 1, xmax = 20)
-        #     plt.savefig(f'{path}/{cm_name}.png', dpi=300)
+            axis.axis(ymin = ymin, ymax = ymax)
+            axis.axis(xmin = 1, xmax = 10)
+            plt.savefig(f'{path}/{cm_name}.png', dpi=300)
 
-        df = pd.read_csv(f'{path}/Sigma mean.csv')
-        # df2 = pd.read_csv(f'{path} line/Sigma mean.csv')
+        # df = pd.read_csv(f'{path}/Sigma mean.csv')
+        # # df2 = pd.read_csv(f'{path} line/Sigma mean.csv')
 
-        # df['Data'] /= df2['Data']
+        # # df['Data'] /= df2['Data']
 
-        plt.clf()
-        plt.rcParams.update({'font.size': 14})
-        f, axis = plt.subplots(1)
-        f.tight_layout()
-        f.set_size_inches(12, 6)
-        axis.grid(True)
-        axis.plot(df['N'], df['Data'], marker='o')
-        axis.set_xlabel("N", loc = 'right')
-        axis.axis(xmin = 0.9, xmax = 20.1)
-        # axis.legend(loc='upper right')
-        plt.savefig(f'{path}/Sigma mean.png', dpi=300)
+        # plt.clf()
+        # plt.rcParams.update({'font.size': 14})
+        # f, axis = plt.subplots(1)
+        # f.tight_layout()
+        # f.set_size_inches(12, 6)
+        # axis.grid(True)
+        # axis.plot(df['N'], df['Data'], marker='o')
+        # axis.set_xlabel("N", loc = 'right')
+        # axis.axis(xmin = 0.9, xmax = 20.1)
+        # # axis.legend(loc='upper right')
+        # plt.savefig(f'{path}/Sigma mean.png', dpi=300)
         
 
     

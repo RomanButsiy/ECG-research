@@ -37,11 +37,11 @@ class Authentication():
         self.names = [
             "Nearest Neighbors",
             "Linear SVM",
+            "Gaussian Process",
             "Decision Tree",
             "Random Forest",
             "Neural Net (MLP)",
             "AdaBoost",
-            "Naive Bayes"
         ]
 
         self.classifiers = [
@@ -64,14 +64,16 @@ class Authentication():
 
     def Diff(self):
         logger.debug("Diff")
-        tmp_path = "Confusion matrix FT pleth_1"
+        # tmp_path = "Confusion matrix FT pleth_1"
         # tmp_path = "Confusion matrix FT"
-        # tmp_path = "Confusion matrix FT SCG"
+        tmp_path = "Confusion matrix FT SCG"
         for average_elements in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]:
-            all_data = [pd.read_csv(f'{self.ecg_config.getImgPath()}/{operator}/{tmp_path}/Authentication n-{average_elements}.csv').drop('Unnamed: 0', axis=1, errors='ignore') for operator in used_authentication.diff2]
+            all_data = [pd.read_csv(f'{self.ecg_config.getImgPath()}/{operator}/{tmp_path}/Authentication n-{average_elements}.csv').drop('Unnamed: 0', axis=1, errors='ignore') for operator in used_authentication.diff]
             df = pd.DataFrame(np.round(np.mean(all_data, axis=0), 3), index=self.confusion_matrix_names, columns=[*self.names, "SIC"])
+            std = pd.DataFrame(np.round(np.std(all_data, axis=0), 3), index=self.confusion_matrix_names, columns=[*self.names, "SIC"])
             Path(f'{self.a_path}/{tmp_path}').mkdir(parents=True, exist_ok=True)
             df.to_csv(f'{self.a_path}/{tmp_path}/Authentication n-{average_elements}.csv')
+            std.to_csv(f'{self.a_path}/{tmp_path}/STD-Authentication n-{average_elements}.csv')
 
         # all_data = [pd.read_csv(f'{self.ecg_config.getImgPath()}/{operator}/{tmp_path}/Sigma mean.csv').drop('Unnamed: 0', axis=1, errors='ignore') for operator in used_authentication.diff]  
         # df = pd.DataFrame(np.round(np.mean(all_data, axis=0), 4), columns=["N", "Data"])
@@ -218,8 +220,8 @@ class Authentication():
             "F1 score", "Learning_time", "Testing_time"
         ]
         names = [*self.names, "SIC"]
-        path = f'{self.a_path}/Confusion matrix FT SCG'
-        # path = f'{self.a_path}/Confusion matrix FT'
+        # path = f'{self.a_path}/Confusion matrix FT SCG'
+        path = f'{self.a_path}/Confusion matrix FT'
         # path = f'{self.a_path}/Confusion matrix FT pleth_1'
         arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
         for cm_name in confusion_matrix_names:
@@ -241,7 +243,7 @@ class Authentication():
                 axis.set_title("t, s", loc = 'left', fontsize=14, position=(-0.02, 0))
             for i, name in zip(t2[::-1], names[::-1]):
                 axis.plot(arr, i, linewidth=2, label=name, marker='o')
-            axis.legend(loc='best',prop={'size':10})
+            axis.legend(loc='upper left',prop={'size':10})
 
             max_value = np.nanmax(t2) if not np.isnan(np.nanmax(t2)) else 0
             min_value = np.nanmin(t2) if not np.isnan(np.nanmax(t2)) else 0

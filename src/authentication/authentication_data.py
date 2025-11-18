@@ -4,7 +4,7 @@ diff = [
     "H_P003",
     "H_P005",
     "H_P006",
-    "H_P007",
+    # "H_P007",
     "H_P008",
     "H_P009",
     "H_P010",
@@ -20,84 +20,132 @@ diff = [
 ]
 
 diff2 = [
-    "H_P001_PPG_S_S1",
-    "H_P002_PPG_S_S1",
-    "H_P003_PPG_S_S1",
-    "H_P004_PPG_S_S1",
-    "H_P005_PPG_S_S1",
-    "H_P006_PPG_S_S1",
-    "H_P007_PPG_S_S1",
-    "H_P008_PPG_S_S1",
-    "H_P010_PPG_S_S1",
-    "H_P011_PPG_S_S1",
-    "H_P012_PPG_S_S1",
-    "H_P015_PPG_S_S1",
-    "H_P016_PPG_S_S1",
-    "H_P017_PPG_S_S1",
-    "H_P018_PPG_S_S1",
-    "H_P019_PPG_S_S1",
-    "H_P020_PPG_S_S1",
-    "H_P021_PPG_S_S1"
+    "0_H_P002_PPG_S_S2",
+    "0_H_P003_PPG_S_S2",
+    "0_H_P004_PPG_S_S2",
+    "0_H_P005_PPG_S_S2",
+    "0_H_P006_PPG_S_S2",
+    "0_H_P010_PPG_S_S2",
+    "0_H_P011_PPG_S_S2",
+    "0_H_P013_PPG_S_S2",
+    "0_H_P015_PPG_S_S2",
+    "0_H_P016_PPG_S_S2",
+    "0_H_P017_PPG_S_S2",
+    "0_H_P019_PPG_S_S2"
+    # "H_P001_PPG_S_S1",
+    # "H_P002_PPG_S_S1",
+    # "H_P003_PPG_S_S1",
+    # "H_P004_PPG_S_S1",
+    # "H_P005_PPG_S_S1",
+    # "H_P006_PPG_S_S1",
+    # "H_P007_PPG_S_S1",
+    # "H_P008_PPG_S_S1",
+    # "H_P010_PPG_S_S1",
+    # "H_P011_PPG_S_S1",
+    # "H_P012_PPG_S_S1",
+    # "H_P015_PPG_S_S1",
+    # "H_P016_PPG_S_S1",
+    # "H_P017_PPG_S_S1",
+    # "H_P018_PPG_S_S1",
+    # "H_P019_PPG_S_S1",
+    # "H_P020_PPG_S_S1",
+    # "H_P021_PPG_S_S1"
 ]
 
 arrays = {
-    "H_P001_PPG_S_S1": [
-        "H_P001_PPG_S_S1"
+    "0_H_P002_PPG_S_S2": [
+        "0_H_P002_PPG_S_S2"
     ],
-    "H_P002_PPG_S_S1": [
-        "H_P002_PPG_S_S1"
+    "0_H_P003_PPG_S_S2": [
+        "0_H_P003_PPG_S_S2"
     ],
-    "H_P003_PPG_S_S1": [
-        "H_P003_PPG_S_S1"
+    "0_H_P004_PPG_S_S2": [
+        "0_H_P004_PPG_S_S2"
     ],
-    "H_P004_PPG_S_S1": [
-        "H_P004_PPG_S_S1"
+    "0_H_P005_PPG_S_S2": [
+        "0_H_P005_PPG_S_S2"
     ],
-    "H_P005_PPG_S_S1": [
-        "H_P005_PPG_S_S1"
+    "0_H_P006_PPG_S_S2": [
+        "0_H_P006_PPG_S_S2"
     ],
-    "H_P006_PPG_S_S1": [
-        "H_P006_PPG_S_S1"
+    "0_H_P010_PPG_S_S2": [
+        "0_H_P010_PPG_S_S2"
     ],
-    "H_P007_PPG_S_S1": [
-        "H_P007_PPG_S_S1"
+    "0_H_P011_PPG_S_S2": [
+        "0_H_P011_PPG_S_S2"
     ],
-    "H_P008_PPG_S_S1": [
-        "H_P008_PPG_S_S1"
+    "0_H_P013_PPG_S_S2": [
+        "0_H_P013_PPG_S_S2"
     ],
-    "H_P010_PPG_S_S1": [
-        "H_P010_PPG_S_S1"
+    "0_H_P015_PPG_S_S2": [
+        "0_H_P015_PPG_S_S2"
     ],
-    "H_P011_PPG_S_S1": [
-        "H_P011_PPG_S_S1"
+    "0_H_P016_PPG_S_S2": [
+        "0_H_P016_PPG_S_S2"
     ],
-    "H_P012_PPG_S_S1": [
-        "H_P012_PPG_S_S1"
+    "0_H_P017_PPG_S_S2": [
+        "0_H_P017_PPG_S_S2"
     ],
-    "H_P014_PPG_S_S1": [
-        "H_P014_PPG_S_S1"
-    ],
-    "H_P015_PPG_S_S1": [
-        "H_P015_PPG_S_S1"
-    ],
-    "H_P016_PPG_S_S1": [
-        "H_P016_PPG_S_S1"
-    ],
-    "H_P017_PPG_S_S1": [
-        "H_P017_PPG_S_S1"
-    ],
-    "H_P018_PPG_S_S1": [
-        "H_P018_PPG_S_S1"
-    ],
-    "H_P019_PPG_S_S1": [
-        "H_P019_PPG_S_S1"
-    ],
-    "H_P020_PPG_S_S1": [
-        "H_P020_PPG_S_S1"
-    ],
-    "H_P021_PPG_S_S1": [
-        "H_P021_PPG_S_S1"
-    ],
+    "0_H_P019_PPG_S_S2": [
+        "0_H_P019_PPG_S_S2"
+    ]
+    # "H_P001_PPG_S_S1": [
+    #     "H_P001_PPG_S_S1"
+    # ],
+    # "H_P002_PPG_S_S1": [
+    #     "H_P002_PPG_S_S1"
+    # ],
+    # "H_P003_PPG_S_S1": [
+    #     "H_P003_PPG_S_S1"
+    # ],
+    # "H_P004_PPG_S_S1": [
+    #     "H_P004_PPG_S_S1"
+    # ],
+    # "H_P005_PPG_S_S1": [
+    #     "H_P005_PPG_S_S1"
+    # ],
+    # "H_P006_PPG_S_S1": [
+    #     "H_P006_PPG_S_S1"
+    # ],
+    # "H_P007_PPG_S_S1": [
+    #     "H_P007_PPG_S_S1"
+    # ],
+    # "H_P008_PPG_S_S1": [
+    #     "H_P008_PPG_S_S1"
+    # ],
+    # "H_P010_PPG_S_S1": [
+    #     "H_P010_PPG_S_S1"
+    # ],
+    # "H_P011_PPG_S_S1": [
+    #     "H_P011_PPG_S_S1"
+    # ],
+    # "H_P012_PPG_S_S1": [
+    #     "H_P012_PPG_S_S1"
+    # ],
+    # "H_P014_PPG_S_S1": [
+    #     "H_P014_PPG_S_S1"
+    # ],
+    # "H_P015_PPG_S_S1": [
+    #     "H_P015_PPG_S_S1"
+    # ],
+    # "H_P016_PPG_S_S1": [
+    #     "H_P016_PPG_S_S1"
+    # ],
+    # "H_P017_PPG_S_S1": [
+    #     "H_P017_PPG_S_S1"
+    # ],
+    # "H_P018_PPG_S_S1": [
+    #     "H_P018_PPG_S_S1"
+    # ],
+    # "H_P019_PPG_S_S1": [
+    #     "H_P019_PPG_S_S1"
+    # ],
+    # "H_P020_PPG_S_S1": [
+    #     "H_P020_PPG_S_S1"
+    # ],
+    # "H_P021_PPG_S_S1": [
+    #     "H_P021_PPG_S_S1"
+    # ],
 }
 
 arrays2 = {

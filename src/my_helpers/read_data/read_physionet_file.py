@@ -1,12 +1,10 @@
 from loguru import logger
 import numpy as np
 import wfdb
-from scipy.signal import butter, lfilter, lfilter_zi
 
 class ReadPhysionetFile:
 
     def __init__(self, ecg_config):
-        # data_path = f'{ecg_config.getDataPath()}/{ecg_config.getFileName()}'
         data_path = f'{ecg_config.getFileName()}'
         logger.info("Read physionet file")
         logger.info(data_path)
@@ -27,14 +25,15 @@ class ReadPhysionetFile:
 
 
     def bandpass(self, data, fs):
+        # data = -data
         m = np.mean(data)
         data = (data - m)
         t = 1
         if np.max(data) > 1000:
             t = 1000.0
         res = data / t
-        # return data
         return res
+        # return res / 1000.0
     
 
     # def butter_bandpass_filter(self, data, lowcut, highcut, fs, order=5):

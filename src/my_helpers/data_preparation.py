@@ -7,9 +7,10 @@ import matplotlib.pyplot as plt
 
 class DataPreparation(ReadDataFile):
 
-    def __init__(self, ecg_config):
+    def __init__(self, ecg_config, m_count):
         super().__init__(ecg_config)
-        self.getData()
+        self.getData(m_count)
+        self.m_count = m_count
 
         self.mod_sampling_rate = int(self.sampling_rate * self.ecg_config.getMultiplier())
 
@@ -48,6 +49,7 @@ class DataPreparation(ReadDataFile):
             arr_stretch = arr_interp(np.linspace(0, arr.size - 1, matrix_R_T_size))
             interp_matrix_R_T.append(arr_stretch)
 
+        # print(interp_matrix_R_T)
         interp_matrix_all = np.concatenate((interp_matrix_P_R, interp_matrix_R_T, interp_matrix_T_P), axis=1)
 
         # self.interp_matrix_all = interp_matrix_all
@@ -55,8 +57,12 @@ class DataPreparation(ReadDataFile):
         for i in range(len(interp_matrix_all)):
             arr = np.array(interp_matrix_all[i])
             arr_interp = interp.interp1d(np.arange(arr.size), arr)
-            arr_stretch = arr_interp(np.linspace(0, arr.size - 1, self.mod_sampling_rate))
+            if m_count:
+                arr_stretch = arr_interp(np.linspace(0, arr.size - 1, int(m_count * self.mod_sampling_rate)))
+            else:
+                arr_stretch = arr_interp(np.linspace(0, arr.size - 1, self.mod_sampling_rate))
             self.interp_matrix_all.append(arr_stretch)
+        print(m_count)
 
     def plotAllCycles(self):
         plot_path = f'{self.ecg_config.getImgPath()}/{self.getSigNameDir()}'
@@ -69,17 +75,18 @@ class DataPreparation(ReadDataFile):
         f.set_size_inches(19, 6)
         axis.grid(True)
         axis.set_xlabel("$t, s$", loc = 'right')
-        time = np.arange(0, len(self.interp_matrix_all[0]), 1) / self.mod_sampling_rate
+        # time = np.arange(0, len(self.interp_matrix_all[0]), 1) / self.mod_sampling_rate
         for i in self.interp_matrix_all:
-            axis.plot(time, i, linewidth=2)
+            axis.plot(i, linewidth=2)
+            break
         plt.savefig(f'{plot_path}/__All_Cycles.png', dpi=300)
 
 
     def getNewMatrixSize(self, matrix):
         n = 0
-        for i in range(len(matrix)):
-            n = n + len(matrix[i])
-        n = int((n / len(matrix)) * self.ecg_config.getMultiplier())
+        # for i in range(len(matrix)):
+        #     n = n + len(matrix[i])
+        # n = int((n / len(matrix)) * self.ecg_config.getMultiplier())
         n = int(len(matrix[0]) * self.ecg_config.getMultiplier())
         return n
     

@@ -124,6 +124,7 @@ m-file/
 База даних ЕКГ/
 XLS_ECG_data/
 tmp/
+src/config/
 
 # Spyder project settings
 .spyderproject

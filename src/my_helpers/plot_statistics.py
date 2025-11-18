@@ -40,10 +40,10 @@ class PlotStatistics():
         logger.info("Plot Mathematical Statistics")
         mathematical_statistics = self.statistics.getMathematicalStatistics()
         xtext = "$t, s$"
-        # self.plot_to_png([*mathematical_statistics.getMathematicalExpectation()] * 6, "1 Mathematical Expectation", xtext=xtext, ytext=r"$\widehat{m}_{\xi_{\omega}} (t), NU$")
-        # self.plot_to_png([*mathematical_statistics.getInitialMomentsSecondOrder()] * 6, "2 Initial Moments Second Order", xtext=xtext, ytext=r"${\widehat{m}}_{\xi_{\omega}}^2 (t), NU^2$")
-        # self.plot_to_png([*mathematical_statistics.getInitialMomentsThirdOrder()] * 6, "3 Initial Moments Third Order", xtext=xtext, ytext=r"${\widehat{m}}_{\xi_{\omega}}^3 (t), NU^3$")
-        # self.plot_to_png([*mathematical_statistics.getVariance()] * 6, "5 Variance", xtext=xtext, ytext=r"${\widehat{d}}_{\xi_{\omega}}^2 (t), NU^2$")
+        self.plot_to_png([*mathematical_statistics.getMathematicalExpectation()] * 6, "1 Mathematical Expectation", xtext=xtext, ytext=r"$\widehat{m}_{\xi_{\omega}} (t), mV$")
+        self.plot_to_png([*mathematical_statistics.getInitialMomentsSecondOrder()] * 6, "2 Initial Moments Second Order", xtext=xtext, ytext=r"${\widehat{m}}_{\xi_{\omega}}^2 (t), mV^2$")
+        self.plot_to_png([*mathematical_statistics.getInitialMomentsThirdOrder()] * 6, "3 Initial Moments Third Order", xtext=xtext, ytext=r"${\widehat{m}}_{\xi_{\omega}}^3 (t), mV^3$")
+        self.plot_to_png([*mathematical_statistics.getVariance()] * 6, "5 Variance", xtext=xtext, ytext=r"${\widehat{d}}_{\xi_{\omega}}^2 (t), mV^2$")
 
         # self.plot_to_png([*mathematical_statistics.getMathematicalExpectation()] * 6, "1 Mathematical Expectation", xtext=xtext, ytext=r"$\widehat{m}_{\xi_{\hat{T}_{av}}} (t), NU$")
         # self.plot_to_png([*mathematical_statistics.getInitialMomentsSecondOrder()] * 6, "2 Initial Moments Second Order", xtext=xtext, ytext=r"$\widehat{m}_{\xi_{\hat{T}_{av}}}^2 (t), NU^2$")
@@ -59,11 +59,11 @@ class PlotStatistics():
         # self.plot_to_png(mathematical_statistics.getCentralMomentFunctionsFourthOrder(), "6 Central Moment Functions Fourth Order",  xtext=xtext, ytext=r"$d_{{\xi}} (t), mV^4$")є
         # self.plot_to_png(np.sqrt(mathematical_statistics.getVariance()), "No Sigma", xtext=xtext, ytext=r"$\hat{\sigma}_{{\xi}} (N), mV$")
  
-        # self.plot_to_csv(mathematical_statistics.getMathematicalExpectation(), "1 Mathematical Expectation")
-        # self.plot_to_csv(mathematical_statistics.getInitialMomentsSecondOrder(), "2 Initial Moments Second Order")
-        # self.plot_to_csv(mathematical_statistics.getInitialMomentsThirdOrder(), "3 Initial Moments Third Order")
+        self.plot_to_csv(mathematical_statistics.getMathematicalExpectation(), "1 Mathematical Expectation")
+        self.plot_to_csv(mathematical_statistics.getInitialMomentsSecondOrder(), "2 Initial Moments Second Order")
+        self.plot_to_csv(mathematical_statistics.getInitialMomentsThirdOrder(), "3 Initial Moments Third Order")
         # self.plot_to_csv(mathematical_statistics.getInitialMomentsFourthOrder(), "4 Initial Moments Fourth Order")
-        # self.plot_to_csv(mathematical_statistics.getVariance(), "5 Variance")
+        self.plot_to_csv(mathematical_statistics.getVariance(), "5 Variance")
         # self.plot_to_csv(mathematical_statistics.getVariance(), "No Variance")
         # self.plot_to_csv(np.sqrt(mathematical_statistics.getVariance()), "No Sigma")
         # self.plot_to_csv(mathematical_statistics.getCentralMomentFunctionsFourthOrder(), "6 Central Moment Functions Fourth Order")
@@ -76,26 +76,26 @@ class PlotStatistics():
         self.fs_plot_to_png(mathematical_statistics.getMathematicalExpectation(), "1 Mathematical Expectation", xtext=xtext, ytext=(r"$a_n, mV$", r"$b_n, mV$"))
         self.fs_plot_to_png(mathematical_statistics.getInitialMomentsSecondOrder(), "2 Initial Moments Second Order", xtext=xtext, ytext=(r"$a_n, mV^2$", r"$b_n, mV^2$"))
         self.fs_plot_to_png(mathematical_statistics.getInitialMomentsThirdOrder(), "3 Initial Moments Third Order", xtext=xtext, ytext=(r"$a_n, mV^3$", r"$b_n, mV^3$"))
-        self.fs_plot_to_png(mathematical_statistics.getInitialMomentsFourthOrder(), "4 Initial Moments Fourth Order", xtext=xtext, ytext=(r"$a_n, mV^4$", r"$b_n, mV^4$"))
+        # self.fs_plot_to_png(mathematical_statistics.getInitialMomentsFourthOrder(), "4 Initial Moments Fourth Order", xtext=xtext, ytext=(r"$a_n, mV^4$", r"$b_n, mV^4$"))
         self.fs_plot_to_png(mathematical_statistics.getVariance(), "5 Variance", xtext=xtext, ytext=(r"$a_n, mV^2$", r"$b_n, mV^2$"))
-        self.fs_plot_to_png(mathematical_statistics.getCentralMomentFunctionsFourthOrder(), "6 Central Moment Functions Fourth Order",  xtext=xtext, ytext=(r"$a_n, mV^4$", r"$b_n, mV^4$"))
+        # self.fs_plot_to_png(mathematical_statistics.getCentralMomentFunctionsFourthOrder(), "6 Central Moment Functions Fourth Order",  xtext=xtext, ytext=(r"$a_n, mV^4$", r"$b_n, mV^4$"))
  
         self.fs_plot_to_csv(mathematical_statistics.getMathematicalExpectation(), "1 Mathematical Expectation")
         self.fs_plot_to_csv(mathematical_statistics.getInitialMomentsSecondOrder(), "2 Initial Moments Second Order")
         self.fs_plot_to_csv(mathematical_statistics.getInitialMomentsThirdOrder(), "3 Initial Moments Third Order")
-        self.fs_plot_to_csv(mathematical_statistics.getInitialMomentsFourthOrder(), "4 Initial Moments Fourth Order")
+        # self.fs_plot_to_csv(mathematical_statistics.getInitialMomentsFourthOrder(), "4 Initial Moments Fourth Order")
         self.fs_plot_to_csv(mathematical_statistics.getVariance(), "5 Variance")
-        self.fs_plot_to_csv(mathematical_statistics.getCentralMomentFunctionsFourthOrder(), "6 Central Moment Functions Fourth Order")
+        # self.fs_plot_to_csv(mathematical_statistics.getCentralMomentFunctionsFourthOrder(), "6 Central Moment Functions Fourth Order")
 
     def fs_plot_to_png(self, plot2, name, xlim = None, ylim = None, ytext=(r"$a_n, mV$", r"$b_n, mV$"), xtext="", size=(19, 6)):
-        path = f'{self.plot_path}/Mathematical Statistics Fourier'
+        path = f'{self.plot_path}/Mathematical Statistics Fourier {self.ecg_config.getSigName()}'
         Path(path).mkdir(parents=True, exist_ok=True)
         an, bn = plot2
         logger.info(f"Plot {name} an.png")
         plt.clf()
         plt.rcParams.update({'font.size': 16})
         f, axis = plt.subplots(1)
-        f.tight_layout()
+        # f.tight_layout()
         f.set_size_inches(size)
         axis.set_xlabel(xtext, loc = 'right')
         axis.set_title(ytext[0], loc = 'left', fontsize=15, position=(-0.05, 0))
@@ -108,7 +108,7 @@ class PlotStatistics():
         plt.clf()
         plt.rcParams.update({'font.size': 16})
         f, axis = plt.subplots(1)
-        f.tight_layout()
+        # f.tight_layout()
         f.set_size_inches(size)
         axis.set_xlabel(xtext, loc = 'right')
         axis.set_title(ytext[1], loc = 'left', fontsize=15, position=(-0.05, 0))
@@ -119,7 +119,7 @@ class PlotStatistics():
 
     def plot_to_png(self, plot, name, xlim = (0, 4.5), ylim = None, ytext="", xtext="", size=(19, 6)):
         logger.info(f"Plot {name}.png")
-        path = f'{self.plot_path}/Mathematical Statistics'
+        path = f'{self.plot_path}/Mathematical Statistics {self.ecg_config.getSigName()}'
         Path(path).mkdir(parents=True, exist_ok=True)
         plt.clf()
         plt.rcParams.update({'font.size': 16})
@@ -139,7 +139,7 @@ class PlotStatistics():
 
     def plot_to_csv(self, plot, name):
         logger.info(f"Save {name}.csv")
-        path = f'{self.plot_path}/Mathematical Statistics/CSV'
+        path = f'{self.plot_path}/Mathematical Statistics {self.ecg_config.getSigName()}/CSV'
         Path(path).mkdir(parents=True, exist_ok=True)
         time = np.arange(0, len(plot), 1) / self.sampling_rate
         data = pd.DataFrame({"Time" : time, "Data" : plot})
@@ -148,10 +148,10 @@ class PlotStatistics():
     def fs_plot_to_csv(self, plot2, name):
         an, bn = plot2
         logger.info(f"Save {name}.csv")
-        path = f'{self.plot_path}/Mathematical Statistics Fourier/CSV'
+        path = f'{self.plot_path}/Mathematical Statistics Fourier {self.ecg_config.getSigName()}/CSV'
         Path(path).mkdir(parents=True, exist_ok=True)
         time = np.arange(0, len(an), 1)
-        data = pd.DataFrame({"n" : time, "an" : an, "bn" : [0, *bn]})
+        data = pd.DataFrame({"N" : time, "a_n" : an, "b_n" : [0, *bn]})
         nk.write_csv(data, f'{path}/{name}.csv')
 
     def getCorrelation(self, correlation = False, deep = 1, multiply = False):

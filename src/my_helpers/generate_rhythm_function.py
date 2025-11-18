@@ -6,6 +6,7 @@ import neurokit2 as nk
 import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
+import time
 
 class GenerateRhythmFunction(ReadDataFile):
 
@@ -21,56 +22,103 @@ class GenerateRhythmFunction(ReadDataFile):
             logger.warning(f'File {path_all} is exist. Create a backup and continue')
             return
         i = self.ecg_config.getSigName()
-
+        # lstart = time.time()
         _, rpeaks = nk.ecg_peaks(self.signals[i], sampling_rate=self.sampling_rate)
         _, waves = nk.ecg_delineate(self.signals[i], rpeaks, sampling_rate=self.sampling_rate)
-        ECG_P_Peaks = list(np.round(np.array(waves["ECG_P_Peaks"]) / self.sampling_rate, 4))
-        ECG_Q_Peaks = list(np.round(np.array(waves["ECG_Q_Peaks"]) / self.sampling_rate, 4))
-        ECG_R_Peaks = list(np.round(np.array(rpeaks["ECG_R_Peaks"]) / self.sampling_rate, 4))
-        ECG_S_Peaks = list(np.round(np.array(waves["ECG_S_Peaks"]) / self.sampling_rate, 4))
-        ECG_T_Peaks = list(np.round(np.array(waves["ECG_T_Peaks"]) / self.sampling_rate, 4))        
-
-        ecg_fr = pd.DataFrame({"ECG_P_Peaks" : ECG_P_Peaks, "ECG_Q_Peaks" : ECG_Q_Peaks, "ECG_R_Peaks" : ECG_R_Peaks, "ECG_S_Peaks" : ECG_S_Peaks, "ECG_T_Peaks" : ECG_T_Peaks})
-        nk.write_csv(ecg_fr, path_all)
-
-    def genIntervals(self):
-        logger.info("Gen All ECG Intervals")
-        path = f'{self.ecg_config.getImgPath()}/{self.ecg_config.getConfigBlock()}/Intervals'
-        Path(path).mkdir(parents=True, exist_ok=True)
-        path_all = f'{path}/All.csv'
-        if Path(path_all).is_file():
-            logger.warning(f'File {path_all} is exist. Create a backup and continue')
-            return
-        
-        i = self.ecg_config.getSigName()
-
-        _, rpeaks = nk.ecg_peaks(self.signals[i], sampling_rate=self.sampling_rate)
-        _, waves = nk.ecg_delineate(self.signals[i], rpeaks, sampling_rate=self.sampling_rate)
-        
-        ECG_P_Onsets = list(np.array(waves["ECG_P_Onsets"]) / self.sampling_rate)
+        # lend = time.time()
+        # print((lend-lstart)*10**3)
         ECG_P_Peaks = list(np.array(waves["ECG_P_Peaks"]) / self.sampling_rate)
-        ECG_P_Offsets = list(np.array(waves["ECG_P_Offsets"]) / self.sampling_rate)
-        # ECG_R_Onsets = list(np.array(waves["ECG_R_Onsets"]) / self.sampling_rate)
-        ECG_Q_Peaks = list(np.array(waves["ECG_Q_Peaks"]) / self.sampling_rate)
+        # ECG_Q_Peaks = list(np.round(np.array(waves["ECG_Q_Peaks"]) / self.sampling_rate, 4))
         ECG_R_Peaks = list(np.array(rpeaks["ECG_R_Peaks"]) / self.sampling_rate)
-        ECG_S_Peaks = list(np.array(waves["ECG_S_Peaks"]) / self.sampling_rate)
-        # ECG_R_Offsets = list(np.array(waves["ECG_R_Offsets"]) / self.sampling_rate)
-        ECG_T_Onsets = list(np.array(waves["ECG_T_Onsets"]) / self.sampling_rate)
-        ECG_T_Peaks = list(np.array(waves["ECG_T_Peaks"]) / self.sampling_rate)
-        ECG_T_Offsets = list(np.array(waves["ECG_T_Offsets"]) / self.sampling_rate)
+        # ECG_S_Peaks = list(np.round(np.array(waves["ECG_S_Peaks"]) / self.sampling_rate, 4))
+        ECG_T_Peaks = list(np.array(waves["ECG_T_Peaks"]) / self.sampling_rate)     
 
-        # ecg_fr = pd.DataFrame({"ECG_P_Onsets" : ECG_P_Onsets, "ECG_P_Peaks" : ECG_P_Peaks, "ECG_P_Offsets" : ECG_P_Offsets, 
-        #                        "ECG_Q_Peaks" : ECG_Q_Peaks,
-        #                        "ECG_R_Peaks" : ECG_R_Peaks,
-        #                        "ECG_S_Peaks" : ECG_S_Peaks,
-        #                        "ECG_T_Onsets" : ECG_T_Onsets, "ECG_T_Peaks" : ECG_T_Peaks, "ECG_T_Offsets" : ECG_T_Offsets})
-        ecg_fr = pd.DataFrame({"ECG_P_Peaks" : ECG_P_Peaks, 
-                               "ECG_Q_Peaks" : ECG_Q_Peaks,
-                               "ECG_R_Peaks" : ECG_R_Peaks,
-                               "ECG_S_Peaks" : ECG_S_Peaks,
-                               "ECG_T_Peaks" : ECG_T_Peaks,})
+        ecg_fr = pd.DataFrame({"ECG_P_Peaks" : ECG_P_Peaks, "ECG_R_Peaks" : ECG_R_Peaks, "ECG_T_Peaks" : ECG_T_Peaks})
+        ecg_fr.interpolate(method='linear', inplace=True)
+        nk.write_csv(ecg_fr.round(4), path_all)
+
+    def getRFFunctionValue(self):
+        logger.info("Get Rhythm Function Function Value")
+        path = f'{self.ecg_config.getImgPath()}/{self.ecg_config.getConfigBlock()}'
+        path_all = f'{path}/Ch-FR-{self.ecg_config.getConfigBlock()}.csv'
+        ch = self.ecg_config.getSigName()
+        new_val = [f"Ch_{ch}_ECG_P_Peaks", f"Ch_{ch}_ECG_R_Peaks", f"Ch_{ch}_ECG_T_Peaks"]
+        self.getData(None)
+        res = []
+        for i in range(len(self.matrix_P_R)):
+            res.append([self.matrix_P_R[i][0], self.matrix_R_T[i][0], self.matrix_T_P[i][0]])
+        res.append([None, None, None])
+        df = pd.read_csv(path_all, index_col="Unnamed: 0").round(4)
+        df[new_val] = res
+        df.to_csv(f'{path}/Ch-FR-{self.ecg_config.getConfigBlock()}.csv')
+
+    def plotIntervals(self):
+        logger.info("Plot ECG Intervals")
+
+        path = f'{self.ecg_config.getImgPath()}/{self.ecg_config.getConfigBlock()}'
+        intervals_path = f'{path}/FR-{self.ecg_config.getConfigBlock()}.csv'
+
+        if not Path(intervals_path).is_file():
+            e = 'The rhythm function file %s does not exist' % intervals_path
+            logger.error(e)
+            raise FileNotFoundError(e)
+
+        # data = DataPreparation(self.ecg_config, None)
+        # ECG_data = np.concatenate(data.getPreparedData())
         
-        nk.write_csv(ecg_fr, path_all)
+        ECG_data = (self.signals[self.ecg_config.getSigName()])
+        time = np.arange(0, len(ECG_data), 1) / self.sampling_rate
+
+        intervals_fr = pd.read_csv(intervals_path)
+        # ECG_P_Onsets = intervals_fr["ECG_P_Onsets"]
+        ECG_P_Peaks = intervals_fr["ECG_P_Peaks"]
+        # ECG_P_Offsets = intervals_fr["ECG_P_Offsets"]
+        # ECG_Q_Peaks = intervals_fr["ECG_Q_Peaks"]
+        ECG_R_Peaks = intervals_fr["ECG_R_Peaks"]
+        # ECG_S_Peaks = intervals_fr["ECG_S_Peaks"]
+        # ECG_T_Onsets = intervals_fr["ECG_T_Onsets"]
+        ECG_T_Peaks = intervals_fr["ECG_T_Peaks"]
+        # ECG_T_Offsets = intervals_fr["ECG_T_Offsets"]
+
+        plt.clf()
+        plt.rcParams.update({'font.size': 20})
+        f, axis = plt.subplots()
+        f.set_size_inches(19, 6)
+        f.tight_layout()
+        axis.grid(True)
+        # signal_detrended = detrend(ECG_data)
+        # print(len(signal_detrended))
+        axis.plot(time, ECG_data, linewidth=3, label=r"$\xi_{{\omega}} (t), NU$")
+        # axis.plot(time, ECG_data, linewidth=3, label=r"$\xi_{{\omega}} (t), mV$")
+        for t in range(len(ECG_P_Peaks) - 1):
+
+            i = t
+            P_Peaks = ECG_P_Peaks[i] 
+            # Q_Peaks = ECG_Q_Peaks[i] + T
+            R_Peaks = ECG_R_Peaks[i] 
+            # S_Peaks = ECG_S_Peaks[i] + T
+            T_Peaks = ECG_T_Peaks[i]
+            next_P_Peaks = ECG_P_Peaks[i + 1]
+
+            # axis.axvline(x = P_Onsets, color = '#9467bd')
+            axis.axvline(P_Peaks, color = '#d62728', linewidth=4)
+            # axis.axvline(x = P_Peaks, color = '#ff7f0e')
+            # axis.axvline(x = P_Offsets, color = '#8c564b')
+            # axis.axvline(x = Q_Peaks, color = '#e377c2')
+            # axis.axvspan(P_Peaks, R_Peaks, color = '#9467bd', alpha=0.2)
+            # axis.axvline(x = S_Peaks, color = '#7f7f7f')
+            # axis.axvline(x = T_Onsets, color = '#bcbd22')
+            axis.axvspan(P_Peaks, T_Peaks, color = '#ff7f0e', alpha=0.2)
+            axis.axvspan(T_Peaks, next_P_Peaks, color = '#2ca02c', alpha=0.2)
+            # axis.axvline(x = T_Peaks, color = '#d62728')
+            # axis.axvline(x = T_Offsets, color = '#17becf')
+        axis.set_xlabel("$t, s$", loc = 'right')
+        axis.legend(loc='upper right')
+        # axis.axis(ymin = -300, ymax = 300)
+        # axis.axis(xmin = 0.5, xmax = 5.2)
+        plt.show()
+        # plt.savefig(f'{path}/ecg_{self.ecg_config.getSigName()}.png', dpi=300)
+        
 
     def showIntervals(self):
         logger.info("Show ECG Intervals")
@@ -84,54 +132,119 @@ class GenerateRhythmFunction(ReadDataFile):
             e = 'The rhythm function file %s does not exist' % intervals_path
             logger.error(e)
             raise FileNotFoundError(e)
+
+        # data = DataPreparation(self.ecg_config, None)
+        # ECG_data = np.concatenate(data.getPreparedData())
         
-        data = DataPreparation(self.ecg_config)
-        ECG_data = np.concatenate(data.getPreparedData())
-        
-        # ECG_data = (self.signals[self.ecg_config.getSigName()])
+        ECG_data = (self.signals[self.ecg_config.getSigName()])
         time = np.arange(0, len(ECG_data), 1) / self.sampling_rate
 
         intervals_fr = pd.read_csv(intervals_path)
         # ECG_P_Onsets = intervals_fr["ECG_P_Onsets"]
-        ECG_P_Peaks = intervals_fr["ECG_P_Peaks"]-0.24
+        ECG_P_Peaks = intervals_fr["ECG_P_Peaks"]
         # ECG_P_Offsets = intervals_fr["ECG_P_Offsets"]
-        ECG_Q_Peaks = intervals_fr["ECG_Q_Peaks"]
+        # ECG_Q_Peaks = intervals_fr["ECG_Q_Peaks"]
         ECG_R_Peaks = intervals_fr["ECG_R_Peaks"]
-        ECG_S_Peaks = intervals_fr["ECG_S_Peaks"]
+        # ECG_S_Peaks = intervals_fr["ECG_S_Peaks"]
         # ECG_T_Onsets = intervals_fr["ECG_T_Onsets"]
         ECG_T_Peaks = intervals_fr["ECG_T_Peaks"]
         # ECG_T_Offsets = intervals_fr["ECG_T_Offsets"]
 
         # plt.clf()
-        plt.rcParams.update({'font.size': 15})
+        # plt.rcParams.update({'font.size': 20})
+        # f, axis = plt.subplots()
+        # f.set_size_inches(19, 6)
+        # f.tight_layout()
+        # axis.grid(True)
+        # signal_detrended = detrend(ECG_data)
+        # print(len(signal_detrended))
+        # print(len(ECG_data))
+
+        # axis.plot(time, ECG_data, linewidth=3, label=r"$\xi_{{\omega}} (t), NU$")
+        # axis.plot(time, ECG_data, linewidth=3, label=r"$\xi_{{\omega}} (t), mV$")
+        # for P_Peaks, R_Peaks, T_Peaks in zip(ECG_P_Peaks, ECG_R_Peaks, ECG_T_Peaks):
+        #     # axis.axvline(x = P_Onsets, color = '#9467bd')
+        #     # axis.axvline(x = P_Peaks, color = '#d62728', linewidth=4)
+        #     axis.axvline(x = P_Peaks, color = '#ff7f0e')
+        #     # axis.axvline(x = P_Offsets, color = '#8c564b')
+        #     # axis.axvline(x = Q_Peaks, color = '#e377c2')
+        #     axis.axvline(x = R_Peaks, color = '#d62728')
+        #     # axis.axvline(x = S_Peaks, color = '#7f7f7f')
+        #     # axis.axvline(x = T_Onsets, color = '#bcbd22')
+        #     axis.axvline(x = T_Peaks, color = '#2ca02c')
+        #     # axis.axvline(x = T_Peaks, color = '#d62728')
+        #     # axis.axvline(x = T_Offsets, color = '#17becf')
+        # axis.set_xlabel("$t, s$", loc = 'right')
+        # axis.legend(loc='upper right')
+        # axis.legend(['$T(t, 1), s$'])
+        # axis.axis(ymin = -300, ymax = 300)
+        
+        # plt.show()
+        # axis.axis(xmin = 0, xmax = 10)
+        # plt.savefig(f'{path}/l-ecg_{self.ecg_config.getSigName()}.png', dpi=300)
+
+        # ECG_data = np.concatenate(data.getPreparedData())
+        
+        # # ECG_data = (self.signals[self.ecg_config.getSigName()])
+        # time = np.arange(0, len(ECG_data), 1) / self.sampling_rate
+
+        # intervals_fr = pd.read_csv(intervals_path)
+        # # ECG_P_Onsets = intervals_fr["ECG_P_Onsets"]
+        # ECG_P_Peaks = intervals_fr["ECG_P_Peaks"]
+        # # ECG_P_Offsets = intervals_fr["ECG_P_Offsets"]
+        # # ECG_Q_Peaks = intervals_fr["ECG_Q_Peaks"]
+        # ECG_R_Peaks = intervals_fr["ECG_R_Peaks"]
+        # # ECG_S_Peaks = intervals_fr["ECG_S_Peaks"]
+        # # ECG_T_Onsets = intervals_fr["ECG_T_Onsets"]
+        # ECG_T_Peaks = intervals_fr["ECG_T_Peaks"]
+        # # ECG_T_Offsets = intervals_fr["ECG_T_Offsets"]
+
+        plt.clf()
+        plt.rcParams.update({'font.size': 21})
         f, axis = plt.subplots()
-        f.set_size_inches(19, 6)
-        f.tight_layout()
+        f.set_size_inches(16, 6)
         axis.grid(True)
         # signal_detrended = detrend(ECG_data)
         # print(len(signal_detrended))
-        print(len(ECG_data))
-
+        # print(len(ECG_data))
         axis.plot(time, ECG_data, linewidth=3, label=r"$\xi_{{\omega}} (t), NU$")
-        for P_Peaks, Q_Peaks, R_Peaks, S_Peaks, T_Peaks in zip(ECG_P_Peaks, ECG_Q_Peaks, ECG_R_Peaks, ECG_S_Peaks, ECG_T_Peaks):
+        # axis.plot(time, ECG_data, linewidth=3, label=r"$\xi_{{\omega}} (t), mV$")
+        # i = 0
+        for t in range(len(ECG_P_Peaks) - 1):
+
+            i = t
+            # T = (ECG_P_Peaks[i + 1] - ECG_P_Peaks[i])
+            T = 0
+            P_Peaks = ECG_P_Peaks[i] + T
+            # Q_Peaks = ECG_Q_Peaks[i] + T
+            R_Peaks = ECG_R_Peaks[i] + T
+            # S_Peaks = ECG_S_Peaks[i] + T
+            T_Peaks = ECG_T_Peaks[i] + T
+            next_P_Peaks = ECG_P_Peaks[i + 1] + T
+
             # axis.axvline(x = P_Onsets, color = '#9467bd')
-            axis.axvline(x = P_Peaks, color = '#d62728', linewidth=4)
+            axis.axvline(P_Peaks, color = '#d62728', linewidth=4)
             # axis.axvline(x = P_Peaks, color = '#ff7f0e')
             # axis.axvline(x = P_Offsets, color = '#8c564b')
             # axis.axvline(x = Q_Peaks, color = '#e377c2')
-            # axis.axvline(x = R_Peaks, color = '#d62728')
+            # axis.axvspan(P_Peaks, R_Peaks, color = '#9467bd', alpha=0.2)
             # axis.axvline(x = S_Peaks, color = '#7f7f7f')
             # axis.axvline(x = T_Onsets, color = '#bcbd22')
-            # axis.axvline(x = T_Peaks, color = '#2ca02c')
+            # axis.axvspan(R_Peaks, T_Peaks, color = '#ff7f0e', alpha=0.2)
+            # axis.axvspan(R_Peaks, T_Peaks, color = '#ff7f0e', alpha=0.2)
+            # axis.axvspan(T_Peaks, next_P_Peaks, color = '#2ca02c', alpha=0.2)
             # axis.axvline(x = T_Peaks, color = '#d62728')
             # axis.axvline(x = T_Offsets, color = '#17becf')
-        axis.set_xlabel("$t, s$", loc = 'right')
+            # i = i + 1
+        axis.set_xlabel("$t, Hour$", loc = 'right')
         axis.legend(loc='upper right')
         # axis.legend(['$T(t, 1), s$'])
-        axis.axis(ymin = -300, ymax = 300)
-        axis.axis(xmin = 0, xmax = 5.2)
+        # axis.axis(ymin = -4, ymax = 5)
+        # axis.axis(xmin = ECG_P_Peaks[0] - 0.005, xmax = 5.7)
+        axis.axis(xmin = 1, xmax = 100)
+        # f.tight_layout()
         # plt.show()
-        plt.savefig(f'{path}/pleth_{self.ecg_config.getSigName()}.png', dpi=300)
+        plt.savefig(f'{path}/ecg_{self.ecg_config.getSigName()}.png', dpi=300)
 
     def getIntervals(self):
         logger.info("To file ECG Intervals") 
@@ -186,16 +299,16 @@ class GenerateRhythmFunction(ReadDataFile):
 
     def plotECG(self):
         logger.info("Plot ECG")
-        path = f'{self.ecg_config.getImgPath()}/{self.ecg_config.getConfigBlock()}/Intervals'
+        path = f'{self.ecg_config.getImgPath()}/{self.ecg_config.getConfigBlock()}'
         Path(path).mkdir(parents=True, exist_ok=True)
 
-        data = DataPreparation(self.ecg_config)
+        data = DataPreparation(self.ecg_config, None)
 
         # print(data.getPreparedData())
 
-        ECG_data = np.transpose(data.getPreparedData())
+        # ECG_data = np.transpose(data.getPreparedData()[10])
 
-        ECG_data = [*ECG_data]
+        # ECG_data = [*ECG_data]
 
         # ECG_data = np.mean(data.getPreparedData(), 0)
 
@@ -204,8 +317,8 @@ class GenerateRhythmFunction(ReadDataFile):
 
         start = 0
         end = 5000
-        # ECG_data = np.round(self.signals[self.ecg_config.getSigName()], 4)
-        time = np.arange(0, len(ECG_data), 1) / data.getModSamplingRate()
+        ECG_data = np.round(self.signals[self.ecg_config.getSigName()], 4)
+        time = np.arange(0, len(ECG_data), 1) / self.sampling_rate
 
         # data = pd.DataFrame({"ECG_data" : ECG_data})
         # data.index = time
@@ -224,14 +337,14 @@ class GenerateRhythmFunction(ReadDataFile):
         axis.set_xlabel("$t, s$", loc = 'right')
         axis.legend(loc='upper right')
         # axis.axis(ymin = -6, ymax = 6)
-        axis.axis(xmin = -0.1, xmax = 6)
-        plt.savefig(f'{path}/ECG_data.png', dpi=300)
+        axis.axis(xmin = 0.5, xmax = 5.7)
+        plt.savefig(f'{path}/ECG_data_Chanel_{self.ecg_config.getSigName()}.png', dpi=300)
 
 
     def plotFr(self, debug = False):
         logger.info("Plot a rhythm function")
 
-        self.getData()
+        self.getData(None)
 
         plot_path = f'{self.ecg_config.getFrImgPath()}/{self.ecg_config.getConfigBlock()}'
         Path(plot_path).mkdir(parents=True, exist_ok=True)
@@ -282,28 +395,34 @@ class GenerateRhythmFunction(ReadDataFile):
             #     T1_Y.append(T1_ECG_S_Peaks[i])
             T1_Y.append(T1_ECG_T_Peaks[i])
 
-        if self.Q_S_exist:
+        # if self.Q_S_exist:
             # fr = pd.DataFrame({"FR_ECG_P" : T1_ECG_P_Peaks, "FR_ECG_Q" : T1_ECG_Q_Peaks, "FR_ECG_R" : T1_ECG_R_Peaks, "FR_ECG_S" : T1_ECG_S_Peaks, "FR_ECG_T" : T1_ECG_T_Peaks})
             # nk.write_csv(fr, f'{plot_path}/FR.csv')
-            print("Mathematical expectation")
-            m = np.mean(T1_Y)
-            print("%.5f" % m)
-            print("Variance")
-            v = sum((T1_Y - m)**2) / len(T1_Y)
-            print("%.5f" % v)
+        print("Mathematical expectation")
+        m = np.mean(T1_Y)
+        print("%.5f" % m)
+        print("Variance")
+        v = sum((T1_Y - m)**2) / len(T1_Y)
+        print("%.5f" % v)
 
         # T1_Y = list(map(lambda x: x - np.mean(T1_Y), T1_Y))
 
+        ymax = 0.1
+        max_value = np.nanmax(T1_Y) if not np.isnan(np.nanmax(T1_Y)) else 0
+        if ymax < max_value and not np.isinf(max_value):
+                ymax = max_value + (max_value / 11.0)
+
         plt.clf()
-        plt.rcParams.update({'font.size': 14})
+        plt.rcParams.update({'font.size': 21})
         f, axis = plt.subplots(1)
-        f.set_size_inches(19, 6)
+        f.set_size_inches(16, 6)
         f.tight_layout()
         axis.grid(True)
         axis.plot(T1_X, T1_Y, linewidth=3)
         axis.set_xlabel("$t, s$", loc = 'right')
         axis.legend(['$T(t, 1), s$'])
-        axis.axis(ymin = -0.2, ymax = 1.2)
-        axis.axis(xmin = T1_X[0], xmax = T1_X[-1])
+        axis.axis(ymin = 0, ymax = ymax)
+        axis.axis(xmin = T1_X[0], xmax = 100)
         plt.savefig(f'{plot_path}/FR-{self.ecg_config.getConfigBlock()}.png', dpi=300)
+        return T1_X, T1_Y, plot_path
 

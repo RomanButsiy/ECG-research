@@ -23,8 +23,7 @@ class ReadDataFile:
     def __getattr__(self, name):
         return self.instance.__getattribute__(name)
 
-    def getData(self):
-        # fr_path = f'{self.ecg_config.getFrPath()}/{self.getSigNameDir()}.csv'
+    def getData(self, m_count):
         path = f'{self.ecg_config.getImgPath()}/{self.ecg_config.getConfigBlock()}'
         fr_path = f'{path}/FR-{self.ecg_config.getConfigBlock()}.csv'
         if not Path(fr_path).is_file():
@@ -61,9 +60,12 @@ class ReadDataFile:
         
         # m = np.mean(T1_Y)
 
-        # self.ECG_T_Peaks = np.arange(self.ECG_T_Peaks.iloc[0], self.ECG_T_Peaks.iloc[-1] - 1, m)
-        # self.ECG_R_Peaks = np.arange(self.ECG_R_Peaks.iloc[0], self.ECG_R_Peaks.iloc[-1] - 1, m)
-        # self.ECG_P_Peaks = np.arange(self.ECG_P_Peaks.iloc[0], self.ECG_P_Peaks.iloc[-1] - 1, m)
+        if m_count: 
+            m = m_count
+    
+            self.ECG_T_Peaks = np.arange(self.ECG_T_Peaks.iloc[0], self.ECG_T_Peaks.iloc[-1] - 1, m)
+            self.ECG_R_Peaks = np.arange(self.ECG_R_Peaks.iloc[0], self.ECG_R_Peaks.iloc[-1] - 1, m)
+            self.ECG_P_Peaks = np.arange(self.ECG_P_Peaks.iloc[0], self.ECG_P_Peaks.iloc[-1] - 1, m)
 
 
         matrix_P_R = []
